@@ -16,9 +16,13 @@ func SetWorkers(all, malicious, probability int) int {
 	workers = make([]*Worker, all)
 	random = rand.New(rand.NewSource(time.Now().Unix()))
 	graph = make([][]Graph, all)
+	tmpGraph = make([][]int, all)
 	for i := 0; i < all; i++ {
 		tmp := make([]Graph, all)
 		graph[i] = tmp
+
+		tmpp := make([]int, all)
+		tmpGraph[i] = tmpp
 	}
 	for i := 0; i < all; i++ {
 		for j := 0; j < all; j++ {
@@ -106,4 +110,8 @@ func updateGraph(i, j int, ok bool) {
 	graph[i][j].weight = int(float32(graph[i][j].goodTask) / float32(graph[i][j].allTask) * 100)
 
 	graph[j][i] = graph[i][j]
+}
+
+func dumpGraph() {
+
 }

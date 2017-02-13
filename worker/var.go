@@ -2,7 +2,7 @@ package worker
 
 import "math/rand"
 
-//Worker , cheat means cheat probability, unit is %, credible initial 1
+//Worker , cheat means cheat probability, unit is %, credible initial 100
 type Worker struct {
 	seq      int
 	cheat    int
@@ -27,7 +27,8 @@ var (
 	//workers     = make(map[int]int) // map[worker][whether is malicious worker], 0 means normal, cheat probability means malicious
 	//credible    = make(map[int]int) // initial is 100 , unit is %
 
-	graph [][]Graph // graph for b-k algorithm, Wi,j = wj,i
+	graph    [][]Graph // graph for b-k algorithm, Wi,j = wj,i
+	tmpGraph [][]int
 
 	//workerGraph   [1000][1000]int
 	//graphGoodTask [1000][1000]int // graph for b-k algorithm

@@ -14,14 +14,21 @@ func Run(allCnt, randCnt, allWorkers, maliciousWorkers, probability int) {
 		os.Exit(1)
 	}
 
+	glog.Infof("begin %s times choose worker random\n", randCnt)
 	randomRun(randCnt)
+
+	glog.Infof("begin %s times choose worker from trustGroup and untrustedGroup\n", allCnt-randCnt)
+	subGroup()
 	specificRun(allCnt - randCnt)
+
+	glog.Infof("run %s times, random run %s times, result is:", allCnt, randCnt)
+	dumpMalicioudWorkers()
 }
 
 func randomRun(k int) {
 	for i := 0; i < k; i++ {
 		w1, w2 := getRandomPair()
-		glog.Infof("random select worker %d and %d to executor work\n", w1, w2)
+		glog.Infof("%d times to random select worker %d and %d to executor work\n", i, w1, w2)
 
 		identical := executorTask(w1, w2)
 		workers[w1].updateCredible(identical)
@@ -95,15 +102,53 @@ func subGroup() {
 }
 
 func detectMaliciousWorker() {
+	needSubgroup := false
 
+	for i := 0; i < workerNum; i++ {
+		for j := 0; j < workerNum; j++ {
+			if workers[i].isMalicious || workers[i].isMalicious {
+				tmpGraph[i][j] = 0
+			} else if graph[i][j].weight == -1 || graph[i][j].weight == 100 {
+				tmpGraph[i][j] = 1
+			} else {
+				tmpGraph[i][j] = 0
+			}
+		}
+	}
+
+	for i := 0; i < workerNum; i++ {
+		if workers[i].isMalicious {
+			continue
+		}
+		ok := true
+		for j := 0; j < workerNum; j++ {
+			if tmpGraph[i][j] == 1 {
+				ok = false
+				break
+			}
+		}
+		if ok {
+			workers[i].isMalicious = true
+			glog.Infof("FOUND: worker %d is malicious\n", i)
+			needSubgroup = true
+		}
+	}
+
+	// use b-k to detect malicious workers
+
+	if needSubgroup {
+		subGroup()
+	}
 }
 
 // choose from untrustedGroup and trustGroup
 func chooseWorkerFromSubGroup() (int, int) {
 	var N1, N2 int
 	var r1, r2 int
-	r := random.Intn(maliciousWorkerNum)
+	var r, rr int
+	r = random.Intn(maliciousWorkerNum)
 	r1 = untrustedGroup[r]
+	glog.Infof("choose first worker %d from untrustedGroup\n", r1)
 
 	fromZero := make([]int, workerNum)
 	fromOne := make([]int, workerNum)
@@ -118,14 +163,19 @@ func chooseWorkerFromSubGroup() (int, int) {
 
 	N1 = len(fromZero)
 	if N1 != 0 {
-		r2 = random.Intn(N1)
+		rr = random.Intn(N1)
+		r2 = trustGroup[rr]
+		glog.Infof("choose second worker %d from trustedGroup not work with first worker\n", r2)
 	} else if N2 != 0 {
-		r2 = random.Intn(N2)
+		rr = random.Intn(N2)
+		r2 = trustGroup[rr]
+		glog.Infof("choose second worker %d from trustedGroup return right answer with first worker before\n", r2)
 	} else {
 		for {
 			rr := random.Intn(maliciousWorkerNum)
 			if rr != r {
 				r2 = untrustedGroup[rr]
+				glog.Infof("choose second worker %d still from untrustedGroup\n", r2)
 				break
 			}
 		}
@@ -160,4 +210,22 @@ func mySort(seq, val []int) {
 
 func bk() {
 
+}
+
+func dumpMalicioudWorkers() {
+	realMalicious := make([]int, workerNum)
+	for i := 0; i < workerNum; i++ {
+		if workers[i].cheat != 0 {
+			realMalicious = append(realMalicious, i)
+		}
+	}
+	glog.Infoln("real malicious workers is ", realMalicious)
+
+	detectedMalicious := make([]int, workerNum)
+	for i := 0; i < workerNum; i++ {
+		if workers[i].isMalicious {
+			detectedMalicious = append(detectedMalicious, i)
+		}
+	}
+	glog.Infoln("detected malicious worker is ", detectedMalicious)
 }
