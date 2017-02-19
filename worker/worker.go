@@ -9,10 +9,11 @@ import (
 )
 
 // SetWorkers all -> all workers, malicious -> malicious workers
-func SetWorkers(all, malicious, probability int) int {
+func SetWorkers(all, malicious, probability, thres int) int {
 	// using shuffle algorithm
 	workerNum = all
 	maliciousWorkerNum = malicious
+	maliThres = thres
 	workers = make([]*Worker, all)
 	random = rand.New(rand.NewSource(time.Now().Unix()))
 	graph = make([][]Graph, all)
@@ -29,6 +30,8 @@ func SetWorkers(all, malicious, probability int) int {
 			graph[i][j].weight = -1
 		}
 	}
+	fa = make([]int, all)
+	sz = make([]int, all)
 	trustGroup = make([]int, workerNum-maliciousWorkerNum)
 	untrustedGroup = make([]int, maliciousWorkerNum)
 
@@ -69,9 +72,11 @@ func initialWorkersInfo() {
 
 }
 
+/*
 func updateCredible(seq, val int) {
 	workers[seq].credible = val
 }
+*/
 
 func (w *Worker) updateCredible(ok bool) {
 	if ok {
@@ -113,5 +118,15 @@ func updateGraph(i, j int, ok bool) {
 }
 
 func dumpGraph() {
+	fmt.Printf("graph %+v\n", graph)
+}
 
+func dumpTmpGraph() {
+	fmt.Printf("graph %+v\n", tmpGraph)
+}
+
+func dumpWorkers() {
+	for i := 0; i < workerNum; i++ {
+		fmt.Printf("worker %d, value %+v\n", i, workers[i])
+	}
 }

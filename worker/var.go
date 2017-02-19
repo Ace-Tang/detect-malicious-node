@@ -23,12 +23,16 @@ type Graph struct {
 var (
 	workerNum          int
 	maliciousWorkerNum int
+	maliThres          int
 	workers            []*Worker
 	//workers     = make(map[int]int) // map[worker][whether is malicious worker], 0 means normal, cheat probability means malicious
 	//credible    = make(map[int]int) // initial is 100 , unit is %
 
 	graph    [][]Graph // graph for b-k algorithm, Wi,j = wj,i
 	tmpGraph [][]int
+
+	fa []int // -1 -> vertex is deleted,
+	sz []int // count union size
 
 	//workerGraph   [1000][1000]int
 	//graphGoodTask [1000][1000]int // graph for b-k algorithm
