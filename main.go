@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	allWorkers       = flag.Int("all-workers", 50, "all workers")
-	maliciousWorkers = flag.Int("malicious-workers", 10, "malicious workers")
+	allWorkers       = flag.Int("all-workers", 10, "all workers")
+	maliciousWorkers = flag.Int("malicious-workers", 2, "malicious workers")
 	cheatProbability = flag.Int("cheat-probility", 50, "cheat probility, unit is %")
-	taskallCnt       = flag.Int("task-all", 100, "task run all times")
-	taskRandCnt      = flag.Int("task-rand", 20, "random select workers times")
-	maliThres        = flag.Int("mali-thres", 10, "bk algorithm threshold for delete malicious worker")
+	taskallCnt       = flag.Int("task-all", 1000, "task run all times")
+	taskRandCnt      = flag.Int("task-rand", 200, "random select workers times")
+	maliThres        = flag.Int("mali-thres", 2, "bk algorithm threshold for delete malicious worker")
 )
 
 func main() {

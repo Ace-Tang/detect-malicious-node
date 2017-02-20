@@ -122,7 +122,7 @@ func dumpGraph() {
 }
 
 func dumpTmpGraph() {
-	fmt.Printf("graph %+v\n", tmpGraph)
+	fmt.Printf("tmpgraph %+v\n", tmpGraph)
 }
 
 func dumpWorkers() {

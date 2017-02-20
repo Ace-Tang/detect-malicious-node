@@ -42,6 +42,9 @@ func randomRun(k int) {
 
 func specificRun(k int) {
 	for i := 0; i < k; i++ {
+		if realtimeMaliciousNum <= 0 {
+			return
+		}
 		w1, w2 := chooseWorkerFromSubGroup()
 		identical := executorTask(w1, w2)
 		workers[w1].updateCredible(identical)
@@ -129,6 +132,7 @@ func detectMaliciousWorker() {
 			}
 		}
 	}
+	dumpTmpGraph()
 
 	for i := 0; i < workerNum; i++ {
 		if workers[i].isMalicious {
@@ -161,14 +165,17 @@ func chooseWorkerFromSubGroup() (int, int) {
 	var N1, N2 int
 	var r1, r2 int
 	var r, rr int
-	r = random.Intn(len(untrustedGroup))
+	r = random.Intn(realtimeMaliciousNum)
 	r1 = untrustedGroup[r]
 	glog.Infof("choose first worker %d from untrustedGroup\n", r1)
 
-	fromZero := make([]int, workerNum)
-	fromOne := make([]int, workerNum)
+	fromZero := make([]int, 0)
+	fromOne := make([]int, 0)
 
-	for _, j := range trustGroup {
+	fmt.Printf("trustGroup len %d, %v\n", len(trustGroup), trustGroup)
+	fmt.Printf("untrustGroup len %d, %v\n", len(untrustedGroup), untrustedGroup)
+	for i := 0; i < realtimeWorkerNum-realtimeMaliciousNum; i++ {
+		j := trustGroup[i]
 		if graph[r1][j].weight == -1 {
 			fromZero = append(fromZero, j)
 		} else if graph[r1][j].weight == 100 {
@@ -189,7 +196,7 @@ func chooseWorkerFromSubGroup() (int, int) {
 		glog.Infof("choose second worker %d from trustedGroup return right answer with first worker before\n", r2)
 	} else {
 		for {
-			rr := random.Intn(len(untrustedGroup))
+			rr := random.Intn(realtimeMaliciousNum)
 			if rr != r {
 				r2 = untrustedGroup[rr]
 				glog.Infof("choose second worker %d still from untrustedGroup\n", r2)
