@@ -1,16 +1,16 @@
 package worker
 
-import "fmt"
+import "github.com/golang/glog"
 
 func union(p, q int) {
 	l := find(p)
 	r := find(q)
-	fmt.Printf("%v\n", fa)
+	//	fmt.Printf("%v\n", fa)
 
-	fmt.Printf("p = %d, q = %d, tmpGraph %d\n", p, q, tmpGraph[p][q])
+	//	fmt.Printf("p = %d, q = %d, tmpGraph %d\n", p, q, tmpGraph[p][q])
 	if l != r {
 		if tmpGraph[l][r] == 1 {
-			fmt.Printf("after tmpGraph %v\n", fa)
+			//			fmt.Printf("after tmpGraph %v\n", fa)
 			fa[r] = l
 			sz[l]++
 		}
@@ -18,9 +18,9 @@ func union(p, q int) {
 }
 
 func find(p int) int {
-	fmt.Printf("p = %d, fa[p]= %d\n", p, fa[p])
+	//fmt.Printf("p = %d, fa[p]= %d\n", p, fa[p])
 	if fa[p] == p {
-		fmt.Printf("fa[p] %d\n", fa[p])
+		//fmt.Printf("fa[p] %d\n", fa[p])
 		return p
 	}
 	return find(fa[p])
@@ -33,10 +33,11 @@ func detect() bool {
 			continue
 		}
 		f := find(i)
-		fmt.Printf("worker %d, father %d, size %d\n", i, f, sz[f])
+		//fmt.Printf("worker %d, father %d, size %d\n", i, f, sz[f])
 		if sz[f] < maliThres {
 			workers[i].isMalicious = true
-			fmt.Printf("worker %d is malicious\n", i)
+			glog.Infof("FOUND: worker %d is malicious\n", i)
+			//fmt.Printf("worker %d is malicious\n", i)
 			flag = true
 		}
 	}
@@ -56,7 +57,6 @@ func initUnionV() {
 
 func doClique() bool {
 	initUnionV()
-	fmt.Printf("%v\n", fa)
 	for i := 0; i < workerNum; i++ {
 		for j := 0; j < workerNum; j++ {
 			if fa[i] == -1 || fa[j] == -1 {
@@ -66,7 +66,6 @@ func doClique() bool {
 		}
 	}
 	//dumpTmpGraph()
-	fmt.Printf("%v\n", fa)
 
 	return detect()
 }

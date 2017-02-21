@@ -40,8 +40,9 @@ var (
 
 	random *rand.Rand
 
-	trustGroup           []int
-	untrustedGroup       []int
-	realtimeWorkerNum    int // realtime all worker quanity after deleted
-	realtimeMaliciousNum int // realtime malicious worker quanity after deleted
+	trustGroup                      []int
+	untrustedGroup                  []int
+	realtimeWorkerNum               int // realtime all worker quanity after deleted
+	realtimeMaliciousNum            int // realtime malicious worker quanity after deleted
+	realtimeMaliciousNumForSubgroup int // number for untrustGroup, because it will need at least 2
 )

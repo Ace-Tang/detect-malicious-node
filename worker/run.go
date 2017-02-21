@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/golang/glog"
@@ -19,11 +18,11 @@ func Run(allCnt, randCnt, allWorkers, maliciousWorkers, probability, threshold i
 	//debug
 	dumpWorkers()
 
-	glog.Infof("begin %s times choose worker from trustGroup and untrustedGroup\n", allCnt-randCnt)
+	glog.Infof("begin %d times choose worker from trustGroup and untrustedGroup\n", allCnt-randCnt)
 	subGroup()
-	specificRun(allCnt - randCnt)
+	specificRunTimes := specificRun(allCnt - randCnt)
 
-	glog.Infof("run %s times, random run %s times, result is:", allCnt, randCnt)
+	glog.Infof("specific run %d times, random run %d times, result is:", specificRunTimes, randCnt)
 	dumpMalicioudWorkers()
 }
 
@@ -40,10 +39,11 @@ func randomRun(k int) {
 	}
 }
 
-func specificRun(k int) {
+func specificRun(k int) int {
 	for i := 0; i < k; i++ {
 		if realtimeMaliciousNum <= 0 {
-			return
+			glog.Infof("STOP: determine all worker is malicious, return")
+			return i
 		}
 		w1, w2 := chooseWorkerFromSubGroup()
 		identical := executorTask(w1, w2)
@@ -53,6 +53,7 @@ func specificRun(k int) {
 
 		detectMaliciousWorker()
 	}
+	return k
 }
 
 func getRandomPair() (int, int) {
@@ -98,18 +99,25 @@ func subGroup() {
 
 	realtimeWorkerNum = idx
 	realtimeMaliciousNum = maliciousWorkerNum - (workerNum - idx)
-	fmt.Printf("realtime WorkerNum %d, realtime MaliciousNum %d\n", idx, realtimeMaliciousNum)
-	if realtimeMaliciousNum < 0 {
-		fmt.Printf("determine all worker is malicious, re-check parameters")
-		os.Exit(-1)
+	realtimeMaliciousNumForSubgroup = realtimeMaliciousNum
+	//fmt.Printf("realtime WorkerNum %d, realtime MaliciousNum %d\n", idx, realtimeMaliciousNum)
+	glog.Infof("realtime WorkerNum %d, realtime MaliciousNum %d\n", idx, realtimeMaliciousNum)
+	if realtimeMaliciousNum <= 0 {
+		//fmt.Printf("determine all worker is malicious, re-check parameters")
+		glog.Infof("STOP: determine all worker is malicious, return")
+		return
+	}
+	if realtimeMaliciousNum == 1 {
+		realtimeMaliciousNumForSubgroup = 3
 	}
 
 	mySort(unsortSeq, unsortVal)
 
-	for i := 0; i < realtimeMaliciousNum; i++ {
+	glog.Infof("unsortSeq %v\n", unsortSeq)
+	for i := 0; i < realtimeMaliciousNumForSubgroup; i++ {
 		untrustedGroup[i] = unsortSeq[i]
 	}
-	for i, j := realtimeMaliciousNum, 0; i < realtimeWorkerNum; i++ {
+	for i, j := realtimeMaliciousNumForSubgroup, 0; i < realtimeWorkerNum; i++ {
 		trustGroup[j] = unsortSeq[i]
 		j++
 	}
@@ -132,7 +140,7 @@ func detectMaliciousWorker() {
 			}
 		}
 	}
-	dumpTmpGraph()
+	//dumpTmpGraph()
 
 	for i := 0; i < workerNum; i++ {
 		if workers[i].isMalicious {
@@ -165,16 +173,16 @@ func chooseWorkerFromSubGroup() (int, int) {
 	var N1, N2 int
 	var r1, r2 int
 	var r, rr int
-	r = random.Intn(realtimeMaliciousNum)
+	r = random.Intn(realtimeMaliciousNumForSubgroup)
 	r1 = untrustedGroup[r]
 	glog.Infof("choose first worker %d from untrustedGroup\n", r1)
 
 	fromZero := make([]int, 0)
 	fromOne := make([]int, 0)
 
-	fmt.Printf("trustGroup len %d, %v\n", len(trustGroup), trustGroup)
-	fmt.Printf("untrustGroup len %d, %v\n", len(untrustedGroup), untrustedGroup)
-	for i := 0; i < realtimeWorkerNum-realtimeMaliciousNum; i++ {
+	//fmt.Printf("trustGroup len %d, %v\n", len(trustGroup), trustGroup)
+	//fmt.Printf("untrustGroup len %d, %v\n", len(untrustedGroup), untrustedGroup)
+	for i := 0; i < realtimeWorkerNum-realtimeMaliciousNumForSubgroup; i++ {
 		j := trustGroup[i]
 		if graph[r1][j].weight == -1 {
 			fromZero = append(fromZero, j)
@@ -183,20 +191,25 @@ func chooseWorkerFromSubGroup() (int, int) {
 		}
 	}
 
+	glog.Infof("chooseWorkerFromSubGroup, trustGroup %v\n", trustGroup)
+	glog.Infof("chooseWorkerFromSubGroup, fromZero %v\n", fromZero)
+	glog.Infof("chooseWorkerFromSubGroup, fromOne %v\n", fromOne)
 	N1 = len(fromZero)
 	N2 = len(fromOne)
 	if N1 != 0 {
 		rr = random.Intn(N1)
-		fmt.Printf("fromZero %v, locate %d\n", N1, rr)
-		r2 = trustGroup[fromZero[rr]]
+		//fmt.Printf("fromZero %v, locate %d\n", N1, rr)
+		//r2 = trustGroup[fromZero[rr]]
+		r2 = fromZero[rr]
 		glog.Infof("choose second worker %d from trustedGroup not work with first worker\n", r2)
 	} else if N2 != 0 {
 		rr = random.Intn(N2)
-		r2 = trustGroup[fromOne[rr]]
+		//r2 = trustGroup[fromOne[rr]]
+		r2 = fromOne[rr]
 		glog.Infof("choose second worker %d from trustedGroup return right answer with first worker before\n", r2)
 	} else {
 		for {
-			rr := random.Intn(realtimeMaliciousNum)
+			rr := random.Intn(realtimeMaliciousNumForSubgroup)
 			if rr != r {
 				r2 = untrustedGroup[rr]
 				glog.Infof("choose second worker %d still from untrustedGroup\n", r2)
@@ -228,8 +241,8 @@ func mySort(seq, val []int) {
 			}
 		}
 	}
-	fmt.Println("sorted seq ", seq)
-	fmt.Println("sorted val ", val)
+	//fmt.Println("sorted seq ", seq)
+	//fmt.Println("sorted val ", val)
 }
 
 func bk() {
@@ -237,7 +250,7 @@ func bk() {
 }
 
 func dumpMalicioudWorkers() {
-	realMalicious := make([]int, workerNum)
+	realMalicious := make([]int, 0)
 	for i := 0; i < workerNum; i++ {
 		if workers[i].cheat != 0 {
 			realMalicious = append(realMalicious, i)
@@ -245,7 +258,7 @@ func dumpMalicioudWorkers() {
 	}
 	glog.Infoln("real malicious workers is ", realMalicious)
 
-	detectedMalicious := make([]int, workerNum)
+	detectedMalicious := make([]int, 0)
 	for i := 0; i < workerNum; i++ {
 		if workers[i].isMalicious {
 			detectedMalicious = append(detectedMalicious, i)

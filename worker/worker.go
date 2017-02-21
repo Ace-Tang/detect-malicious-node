@@ -33,7 +33,7 @@ func SetWorkers(all, malicious, probability, thres int) int {
 	fa = make([]int, all)
 	sz = make([]int, all)
 	trustGroup = make([]int, workerNum-maliciousWorkerNum)
-	untrustedGroup = make([]int, maliciousWorkerNum)
+	untrustedGroup = make([]int, maliciousWorkerNum+2)
 
 	var front, last int
 	var sortedArr [1000]int
@@ -63,7 +63,7 @@ func SetWorkers(all, malicious, probability, thres int) int {
 	}
 
 	glog.Infof("get all %d workers, malicious workers is %v\n", all, maliciousWorkers)
-	fmt.Printf("get all %d workers, malicious workers is %v\n", all, maliciousWorkers)
+	//fmt.Printf("get all %d workers, malicious workers is %v\n", all, maliciousWorkers)
 
 	return len(maliciousWorkers)
 }
