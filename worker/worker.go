@@ -126,7 +126,8 @@ func dumpTmpGraph() {
 }
 
 func dumpWorkers() {
+	glog.Infoln("show all workers")
 	for i := 0; i < workerNum; i++ {
-		fmt.Printf("worker %d, value %+v\n", i, workers[i])
+		glog.Infof("worker %d, value %+v\n", i, workers[i])
 	}
 }

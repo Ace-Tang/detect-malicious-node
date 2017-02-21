@@ -2,6 +2,7 @@ package worker
 
 import (
 	"os"
+	"time"
 
 	"github.com/golang/glog"
 )
@@ -12,11 +13,11 @@ func Run(allCnt, randCnt, allWorkers, maliciousWorkers, probability, threshold i
 		glog.Errorf("random malicious workers error")
 		os.Exit(1)
 	}
+	dumpWorkers()
 
 	glog.Infof("begin %s times choose worker random\n", randCnt)
 	randomRun(randCnt)
 	//debug
-	dumpWorkers()
 
 	glog.Infof("begin %d times choose worker from trustGroup and untrustedGroup\n", allCnt-randCnt)
 	subGroup()
@@ -265,4 +266,10 @@ func dumpMalicioudWorkers() {
 		}
 	}
 	glog.Infoln("detected malicious worker is ", detectedMalicious)
+}
+
+func WaitGlogPrint() {
+	select {
+	case <-time.After(30 * time.Second):
+	}
 }

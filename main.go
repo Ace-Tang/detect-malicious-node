@@ -1,8 +1,8 @@
 package main
 
 import (
+	"detect-malicious-node/worker"
 	"flag"
-	"hadoop/worker"
 )
 
 var (
@@ -18,4 +18,6 @@ func main() {
 	flag.Parse()
 
 	worker.Run(*taskallCnt, *taskRandCnt, *allWorkers, *maliciousWorkers, *cheatProbability, *maliThres)
+
+	worker.WaitGlogPrint()
 }
