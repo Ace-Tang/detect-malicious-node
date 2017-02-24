@@ -7,8 +7,8 @@ import (
 	"github.com/golang/glog"
 )
 
-func Run(allCnt, randCnt, allWorkers, maliciousWorkers, probability, threshold int) {
-	ret := SetWorkers(allWorkers, maliciousWorkers, probability, threshold)
+func Run(allCnt, randCnt, allWorkers, maliciousWorkers, probability, threshold, conspirators int) {
+	ret := SetWorkers(allWorkers, maliciousWorkers, probability, threshold, conspirators)
 	if ret != maliciousWorkers {
 		glog.Errorf("random malicious workers error")
 		os.Exit(1)
@@ -21,7 +21,7 @@ func Run(allCnt, randCnt, allWorkers, maliciousWorkers, probability, threshold i
 
 	glog.Infof("begin %d times choose worker from trustGroup and untrustedGroup\n", allCnt-randCnt)
 	subGroup()
-	specificRunTimes := specificRun(allCnt - randCnt)
+	specificRunTimes := specificRun(allCnt-randCnt, randCnt)
 
 	glog.Infof("specific run %d times, random run %d times, result is:", specificRunTimes, randCnt)
 	dumpMalicioudWorkers()
@@ -40,13 +40,15 @@ func randomRun(k int) {
 	}
 }
 
-func specificRun(k int) int {
+func specificRun(k, randCnt int) int {
 	for i := 0; i < k; i++ {
 		if realtimeMaliciousNum <= 0 {
 			glog.Infof("STOP: determine all worker is malicious, return")
 			return i
 		}
+
 		w1, w2 := chooseWorkerFromSubGroup()
+		glog.Infof("%d times to specific select worker %d and %d to executor work\n", i+randCnt, w1, w2)
 		identical := executorTask(w1, w2)
 		workers[w1].updateCredible(identical)
 		workers[w2].updateCredible(identical)
@@ -75,9 +77,14 @@ func executorTask(i, j int) bool {
 	ret1 := workers[i].getResult()
 	ret2 := workers[j].getResult()
 
-	if ret1 == 1 && ret2 == 1 {
+	if (ret1 == 1 && ret2 == 1) || (ret1 == 2 && ret2 == 2) {
 		return true
 	}
+	/*
+		if ret1 == 2 && ret2 == 2 {
+			return true
+		}
+	*/
 	return false
 }
 

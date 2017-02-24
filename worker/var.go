@@ -4,9 +4,10 @@ import "math/rand"
 
 //Worker , cheat means cheat probability, unit is %, credible initial 100
 type Worker struct {
-	seq      int
-	cheat    int
-	credible int
+	seq           int
+	cheat         int
+	credible      int
+	isConspirator bool
 
 	completedTask int
 	goodTask      int
@@ -21,10 +22,11 @@ type Graph struct {
 }
 
 var (
-	workerNum          int
-	maliciousWorkerNum int
-	maliThres          int
-	workers            []*Worker
+	workerNum            int
+	maliciousWorkerNum   int
+	conspiratorWorkerNum int
+	maliThres            int
+	workers              []*Worker
 	//workers     = make(map[int]int) // map[worker][whether is malicious worker], 0 means normal, cheat probability means malicious
 	//credible    = make(map[int]int) // initial is 100 , unit is %
 

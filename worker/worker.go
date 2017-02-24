@@ -9,10 +9,11 @@ import (
 )
 
 // SetWorkers all -> all workers, malicious -> malicious workers
-func SetWorkers(all, malicious, probability, thres int) int {
+func SetWorkers(all, malicious, probability, thres, conspirators int) int {
 	// using shuffle algorithm
 	workerNum = all
 	maliciousWorkerNum = malicious
+	conspiratorWorkerNum = conspirators
 	maliThres = thres
 	workers = make([]*Worker, all)
 	random = rand.New(rand.NewSource(time.Now().Unix()))
@@ -55,14 +56,22 @@ func SetWorkers(all, malicious, probability, thres int) int {
 		}
 	}
 
-	maliciousWorkers := []int{}
-	for i := 0; i < malicious; i++ {
+	maliciousWorkers, conspiratorsWorkers := []int{}, []int{}
+	for j := 0; j < conspirators; j++ {
+		maliciousLocate := sortedArr[j]
+		conspiratorsWorkers = append(conspiratorsWorkers, maliciousLocate)
+		maliciousWorkers = append(maliciousWorkers, maliciousLocate)
+		workers[maliciousLocate].cheat = probability
+		workers[maliciousLocate].isConspirator = true
+	}
+
+	for i := conspirators; i < malicious; i++ {
 		maliciousLocate := sortedArr[i]
 		maliciousWorkers = append(maliciousWorkers, maliciousLocate)
 		workers[maliciousLocate].cheat = probability
 	}
 
-	glog.Infof("get all %d workers, malicious workers is %v\n", all, maliciousWorkers)
+	glog.Infof("get all %d workers, malicious workers is %v, conspirator workers is %v\n", all, maliciousWorkers, conspiratorsWorkers)
 	//fmt.Printf("get all %d workers, malicious workers is %v\n", all, maliciousWorkers)
 
 	return len(maliciousWorkers)
@@ -94,12 +103,16 @@ func (w *Worker) beCheat() bool {
 	return true
 }
 
-// return 1 means right result, 0 means wrong
+// return 1 means right result, 0 means wrong, 2 means conspirators
 func (w *Worker) getResult() int {
 	if w.cheat != 0 {
 		p := random.Intn(100)
 		if p < w.cheat {
-			return 0
+			if w.isConspirator {
+				return 2
+			} else {
+				return 0
+			}
 		}
 	}
 
