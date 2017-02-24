@@ -14,6 +14,7 @@ func Run(allCnt, randCnt, allWorkers, maliciousWorkers, probability, threshold, 
 		os.Exit(1)
 	}
 	dumpWorkers()
+	taskFail = 0
 
 	glog.Infof("begin %s times choose worker random\n", randCnt)
 	randomRun(randCnt)
@@ -85,6 +86,7 @@ func executorTask(i, j int) bool {
 			return true
 		}
 	*/
+	taskFail++
 	return false
 }
 
@@ -276,6 +278,7 @@ func dumpMalicioudWorkers() {
 		}
 	}
 	glog.Infoln("detected malicious worker is ", detectedMalicious)
+	glog.Infoln("task fail times ", taskFail)
 }
 
 func WaitGlogPrint() {
