@@ -75,7 +75,10 @@ func executorTask(i, j int) bool {
 	ret1 := workers[i].getResult()
 	ret2 := workers[j].getResult()
 
-	return (ret1 == ret2)
+	if ret1 == 1 && ret2 == 1 {
+		return true
+	}
+	return false
 }
 
 // depart group to trusted and untrusted
