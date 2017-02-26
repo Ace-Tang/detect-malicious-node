@@ -15,6 +15,8 @@ func Run(allCnt, randCnt, allWorkers, maliciousWorkers, probability, threshold, 
 	}
 	dumpWorkers()
 	taskFail = 0
+	taskRight = 0
+	taskConspirator = 0
 
 	glog.Infof("begin %s times choose worker random\n", randCnt)
 	randomRun(randCnt)
@@ -78,9 +80,16 @@ func executorTask(i, j int) bool {
 	ret1 := workers[i].getResult()
 	ret2 := workers[j].getResult()
 
-	if (ret1 == 1 && ret2 == 1) || (ret1 == 2 && ret2 == 2) {
+	if ret1 == 1 && ret2 == 1 {
+		taskRight++
 		return true
 	}
+
+	if ret1 == 2 && ret2 == 2 {
+		taskConspirator++
+		return true
+	}
+
 	/*
 		if ret1 == 2 && ret2 == 2 {
 			return true
@@ -278,7 +287,7 @@ func dumpMalicioudWorkers() {
 		}
 	}
 	glog.Infoln("detected malicious worker is ", detectedMalicious)
-	glog.Infoln("task fail times ", taskFail)
+	glog.Infof("task fail times %d, task right times %d, task in conspirators times %d\n", taskFail, taskRight, taskConspirator)
 }
 
 func WaitGlogPrint() {

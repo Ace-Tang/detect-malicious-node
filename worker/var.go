@@ -48,5 +48,7 @@ var (
 	realtimeMaliciousNum            int // realtime malicious worker quanity after deleted
 	realtimeMaliciousNumForSubgroup int // number for untrustGroup, because it will need at least 2
 
-	taskFail int
+	taskFail        int
+	taskRight       int
+	taskConspirator int
 )
